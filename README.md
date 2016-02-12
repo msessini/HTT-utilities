@@ -2,20 +2,32 @@
 
 MET recoil corrections
 
------ How to set up the Lepton Efficiency Interface ------
+----- How to set up the MET Recoil Correction Interface ------
 
-1. Go to your CMSSW area, and do 
+> cd ${CMSSW_BASE}/src
 
-cmsenv
+> cmsenv
 
-2. Then, do the following to clone the repositories 
+> git clone https://github.com/CMS-HTT/RecoilCorrections.git HTT-utilities/RecoilCorrections 
 
-cd ${CMSSW_BASE}/src
-git clone https://github.com/CMS-HTT/RecoilCorrections.git HTT-utilities/RecoilCorrections 
+> scram b 
 
-3. Compile 
+---- How to use the code ------------
 
-scram b 
+// Add the header file to your source file
 
----- How to use code 
+#include "HTT-utilities/RecoilCorrections/interface/RecoilCorrector.h"
+
+// Create instances of class RecoilCorrection and
+
+// load recoil resolution functions
+
+RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPFMet.root");
+
+RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/recoilMvaMet.root");
+  
+RecoilCorrector recoilPuppiMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPuppiMet.root");
+ 
+// apply recoil corrections
+
 
