@@ -13,10 +13,20 @@ RecoilCorrector::RecoilCorrector(TString fileName) {
   }
 
   TH1D * projH = (TH1D*)file->Get("projH");
+  if (projH==NULL) {
+    std::cout << "File should contain histogram with the name projH " << std::endl;
+    std::cout << "Check content of the file " << _fileName << std::endl;
+  }
+
   TString perpZStr = projH->GetXaxis()->GetBinLabel(1);
   TString paralZStr = projH->GetXaxis()->GetBinLabel(2);
 
   TH1D * ZPtBinsH = (TH1D*)file->Get("ZPtBinsH");
+  if (ZPtBinsH==NULL) {
+    std::cout << "File should contain histogram with the name ZPtBinsH " << std::endl;
+    std::cout << "Check content of the file " << _fileName << std::endl;
+    exit(-1);
+  }
   int nZPtBins = ZPtBinsH->GetNbinsX();
   float ZPtBins[10];
   TString ZPtStr[10];
@@ -27,6 +37,11 @@ RecoilCorrector::RecoilCorrector(TString fileName) {
   }
 
   TH1D * nJetBinsH = (TH1D*)file->Get("nJetBinsH");
+  if (nJetBinsH==NULL) {
+    std::cout << "File should contain histogram with the name nJetBinsH" << std::endl;
+    std::cout << "Check content of the file " << _fileName << std::endl;
+    exit(-1);
+  }
   int nJetsBins = nJetBinsH->GetNbinsX();
   TString nJetsStr[5];
   for (int i=0; i<nJetsBins; ++i) {
@@ -42,8 +57,9 @@ RecoilCorrector::RecoilCorrector(TString fileName) {
 		 nJetsBins,
 		 nJetsStr);
 
-  _epsrel = 1e-4;
-  _epsabs = 1e-4;
+  _epsrel = 1e-2;
+  _epsabs = 1e-2;
+  _range = 0.95;
 
 }
 
@@ -118,6 +134,7 @@ void RecoilCorrector::InitMEtWeights(TFile * _fileMet,
       _metZPerpMC[ZPtBin][jetBin]    = (TF1*)_fileMet->Get(binStrPerpMC);
 
 
+
       // checking functions
       if (_metZParalData[ZPtBin][jetBin]==NULL) {
 	std::cout << "Function with name " << binStrParalData
@@ -173,6 +190,17 @@ void RecoilCorrector::InitMEtWeights(TFile * _fileMet,
       _xminMetZPerp[ZPtBin][jetBin] = TMath::Max(_xminMetZPerpData[ZPtBin][jetBin],_xminMetZPerpMC[ZPtBin][jetBin]);
       _xmaxMetZPerp[ZPtBin][jetBin] = TMath::Min(_xmaxMetZPerpData[ZPtBin][jetBin],_xmaxMetZPerpMC[ZPtBin][jetBin]);
       
+      _meanMetZParalData[ZPtBin][jetBin] = _metZParalData[ZPtBin][jetBin]->GetParameter(1);
+      _rmsMetZParalData[ZPtBin][jetBin] = TMath::Sqrt(_metZParalData[ZPtBin][jetBin]->CentralMoment(2,_xminMetZParalData[ZPtBin][jetBin],_xmaxMetZParalData[ZPtBin][jetBin]));
+      _meanMetZPerpData[ZPtBin][jetBin] = 0;
+      _rmsMetZPerpData[ZPtBin][jetBin] = TMath::Sqrt(_metZPerpData[ZPtBin][jetBin]->CentralMoment(2,_xminMetZPerpData[ZPtBin][jetBin],_xmaxMetZPerpData[ZPtBin][jetBin]));
+
+      _meanMetZParalMC[ZPtBin][jetBin] = _metZParalMC[ZPtBin][jetBin]->GetParameter(1);
+      _rmsMetZParalMC[ZPtBin][jetBin] = TMath::Sqrt(_metZParalMC[ZPtBin][jetBin]->CentralMoment(2,_xminMetZParalMC[ZPtBin][jetBin],_xmaxMetZParalMC[ZPtBin][jetBin]));
+      _meanMetZPerpMC[ZPtBin][jetBin] = 0;
+      _rmsMetZPerpMC[ZPtBin][jetBin] = TMath::Sqrt(_metZPerpMC[ZPtBin][jetBin]->CentralMoment(2,_xminMetZPerpMC[ZPtBin][jetBin],_xmaxMetZPerpMC[ZPtBin][jetBin]));
+
+
     }
   }
 
@@ -191,7 +219,7 @@ void RecoilCorrector::Correct(float MetPx,
   // input parameters
   // MetPx, MetPy - missing transverse momentum 
   // genVPx, genVPy - generated transverse momentum of Z(W)
-  // visVPx, visVPy - visible (measured) transverse momentum of Z(W)
+  // visVPx, visVPy - visible transverse momentum of Z(W)
   // njets - number of jets 
   // MetCorrPx, MetCorrPy - corrected missing transverse momentum
 
@@ -227,7 +255,7 @@ void RecoilCorrector::Correct(float MetPx,
   TF1 * metZParalMC   = _metZParalMC[ZptBin][njets];
   TF1 * metZPerpMC     = _metZPerpMC[ZptBin][njets];
   
-  if (U1>_xminMetZParal[ZptBin][njets]&&U1<_xmaxMetZParal[ZptBin][njets]) {
+  if (U1>_range*_xminMetZParal[ZptBin][njets]&&U1<_range*_xmaxMetZParal[ZptBin][njets]) {
     
     int nSumProb = 1;
     double q[1];
@@ -237,24 +265,30 @@ void RecoilCorrector::Correct(float MetPx,
     
     if (sumProb[0]<0) {
       //	std::cout << "Warning ! ProbSum[0] = " << sumProb[0] << std::endl;
-      sumProb[0] = 1e-10;
+      sumProb[0] = 1e-5;
     }
     if (sumProb[0]>1) {
       //	std::cout << "Warning ! ProbSum[0] = " << sumProb[0] << std::endl;
-      sumProb[0] = 0.9999999;
+      sumProb[0] = 1.0 - 1e-5;
     }
     
       
     metZParalData->GetQuantiles(nSumProb,q,sumProb);
 
     float U1reco = float(q[0]);
-    
-    if (U1reco>_xminMetZParal[ZptBin][njets]&&U1reco<_xmaxMetZParal[ZptBin][njets]) 
-      U1 = U1reco;
+    U1 = U1reco;
     
   }
+  else {
+    float U1reco = rescale(U1,
+			   _meanMetZParalData[ZptBin][njets],
+			   _meanMetZParalMC[ZptBin][njets],
+			   _rmsMetZParalData[ZptBin][njets],
+			   _rmsMetZParalMC[ZptBin][njets]);
+    U1 = U1reco;
+  }
 
-  if (U2>_xminMetZPerp[ZptBin][njets]&&U2<_xmaxMetZPerp[ZptBin][njets]) {
+  if (U2>_range*_xminMetZPerp[ZptBin][njets]&&U2<_range*_xmaxMetZPerp[ZptBin][njets]) {
     
     int nSumProb = 1;
     double q[1];
@@ -264,20 +298,26 @@ void RecoilCorrector::Correct(float MetPx,
     
     if (sumProb[0]<0) {
       //	std::cout << "Warning ! ProbSum[0] = " << sumProb[0] << std::endl;
-      sumProb[0] = 1e-10;
+      sumProb[0] = 1e-5;
     }
     if (sumProb[0]>1) {
       //	std::cout << "Warning ! ProbSum[0] = " << sumProb[0] << std::endl;
-      sumProb[0] = 0.9999999;
+      sumProb[0] = 1.0 - 1e-5;
     }
     
     metZPerpData->GetQuantiles(nSumProb,q,sumProb);
 
     float U2reco = float(q[0]);
-    
-    if (U2reco>_xminMetZPerp[ZptBin][njets]&&U2reco<_xmaxMetZPerp[ZptBin][njets]) 
-      U2 = U2reco;
+    U2 = U2reco;
       
+  }
+  else {
+    float U2reco = rescale(U2,
+			   _meanMetZPerpData[ZptBin][njets],
+			   _meanMetZPerpMC[ZptBin][njets],
+			   _rmsMetZPerpData[ZptBin][njets],
+			   _rmsMetZPerpMC[ZptBin][njets]);
+    U2 = U2reco;
   }
   
   CalculateMetFromU1U2(U1,U2,genVPx,genVPy,visVPx,visVPy,MetCorrPx,MetCorrPy);
@@ -310,9 +350,9 @@ float RecoilCorrector::CorrectionsBySampling(float x, TF1 * funcMC, TF1 * funcDa
 }
 
 void RecoilCorrector::U1U2CorrectionsByWidth(float & U1, 
-					 float & U2,
-					 int ZptBin,
-					 int njets) {
+					     float & U2,
+					     int ZptBin,
+					     int njets) {
 
   if (njets>=_nJetsBins)
     njets = _nJetsBins - 1;
@@ -322,23 +362,34 @@ void RecoilCorrector::U1U2CorrectionsByWidth(float & U1,
   float width = U1 - _meanMetZParalMC[ZptBin][njets];
 
   if (width<0)
-    width *= _rmsLeftMetZParalData[ZptBin][njets]/_rmsLeftMetZParalMC[ZptBin][njets];
+    width *= _rmsMetZParalData[ZptBin][njets]/_rmsMetZParalMC[ZptBin][njets];
   else
-    width *= _rmsRightMetZParalData[ZptBin][njets]/_rmsRightMetZParalMC[ZptBin][njets];
+    width *= _rmsMetZParalData[ZptBin][njets]/_rmsMetZParalMC[ZptBin][njets];
 
   U1 = _meanMetZParalData[ZptBin][njets] + width;
 
   // ********* U2 *************
 
-  width = U2 - _meanMetZPerpMC[ZptBin][njets];
-
+  width = U2;
 
   if (width<0)
-    width *= _rmsLeftMetZPerpData[ZptBin][njets]/_rmsLeftMetZPerpMC[ZptBin][njets];
+    width *= _rmsMetZPerpData[ZptBin][njets]/_rmsMetZPerpMC[ZptBin][njets];
   else 
-    width *= _rmsRightMetZPerpData[ZptBin][njets]/_rmsRightMetZPerpMC[ZptBin][njets];
+    width *= _rmsMetZPerpData[ZptBin][njets]/_rmsMetZPerpMC[ZptBin][njets];
 
-  U2 = _meanMetZPerpData[ZptBin][njets] + width;
+  U2 = width;
+
+}
+
+float RecoilCorrector::rescale(float x,
+			       float meanData, 
+			       float meanMC,
+			       float resolutionData,
+			       float resolutionMC) {
+
+  float width = meanMC - x;
+  width *= resolutionData/resolutionMC;
+  return meanData + width;
 
 }
 

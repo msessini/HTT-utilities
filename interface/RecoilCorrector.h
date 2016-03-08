@@ -91,8 +91,12 @@ class RecoilCorrector {
 
   float CorrectionsBySampling(float x, TF1 * funcMC, TF1 * funcData);
 
-  TF1 * getAsymFuncRecoil(TF1* initFunc, bool left);
-  TF1 * getSymFuncRecoil(TF1* initFunc);
+  float rescale(float x,
+		float meanData, 
+		float meanMC,
+		float resolutionData,
+		float resolutionMC);
+    
 
   //float * _ZPtBins;
   std::vector<float> _ZPtBins;
@@ -100,6 +104,7 @@ class RecoilCorrector {
   Double_t 	_epsrel;
   Double_t 	_epsabs;
   Double_t   	_error;
+  float _range;
 
   int _nZPtBins;
   int _nJetsBins;
