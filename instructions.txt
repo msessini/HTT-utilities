@@ -16,9 +16,9 @@ MET recoil corrections
 
 // create instances of class RecoilCorrection and
 // load recoil resolution functions before looping over events
-RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPFMet.root");
-RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/recoilMvaMet.root");
-RecoilCorrector recoilPuppiMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPuppiMet.root");
+// the path to files is defined relative to #CMSSW_BASE/src directory
+RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPFMEt_76X.root");
+RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/recoilMvaMEt_76X_newTraining.root");
  
 ...
 
@@ -31,7 +31,7 @@ recoilPFMetCorrector.Correct(
     genZPy,       // generator Z(W) py
     visZPx,       // visible (generator) Z(W) px
     visZPy,       // visible (generator) Z(W) py
-    nJets30,      // number of jets (pT > 30 GeV, |eta|<4.7, Loose PFJet Id, PU Jet Id)
+    nJets30,      // number of jets (pT > 30 GeV, |eta|<4.7, Loose PFJet Id)
     pfmetcorr_ex, // corrected met px
     pfmetcorr_ey  // corrected met py
 );
@@ -47,18 +47,4 @@ recoilMvaMetCorrector.Correct(
     mvametcorr_ex,
     mvametcorr_ey 
 );
-
-recoilPuppiMetCorrector.Correct(
-    puppimet_ex,
-    puppimet_ey,
-    genZPx,
-    genZPy,
-    visZPx,
-    visZPy,
-    nJets30,
-    puppimetcorr_ex,
-    puppimetcorr_ey
-);
-
-
 
