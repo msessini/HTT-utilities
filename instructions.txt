@@ -17,8 +17,11 @@ MET recoil corrections
 // create instances of class RecoilCorrection and
 // load recoil resolution functions before looping over events
 // the path to files is defined relative to #CMSSW_BASE/src directory
-RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPFMEt_76X.root");
-RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/recoilMvaMEt_76X_newTraining.root");
+
+//RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPFMEt_76X.root"); // for amc@NLO 
+//RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/recoilMvaMEt_76X_newTraining.root"); // for amc@NLO
+RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPFMEt_76X_MG5.root"); // for MG5 
+RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/recoilMvaMEt_76X_newTraining_MG5.root"); // for MG5
  
 ...
 
