@@ -27,6 +27,7 @@ RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/reco
 
 // apply recoil corrections for each event
 
+// recoil corrections by quantile mapping --->
 recoilPFMetCorrector.Correct(
     pfmet_ex,     // uncorrected met px
     pfmet_ey,     // uncorrected met py
@@ -38,7 +39,6 @@ recoilPFMetCorrector.Correct(
     pfmetcorr_ex, // corrected met px
     pfmetcorr_ey  // corrected met py
 );
-
 recoilMvaMetCorrector.Correct(
     mvamet_ex, 
     mvamet_ey, 
@@ -51,3 +51,26 @@ recoilMvaMetCorrector.Correct(
     mvametcorr_ey 
 );
 
+// recoil corrections by rescaling -->
+recoilPFMetCorrector.CorrectByMeanResolution(
+    pfmet_ex,     // uncorrected met px
+    pfmet_ey,     // uncorrected met py
+    genZPx,       // generator Z(W) px
+    genZPy,       // generator Z(W) py
+    visZPx,       // visible (generator) Z(W) px
+    visZPy,       // visible (generator) Z(W) py
+    nJets30,      // number of jets (pT > 30 GeV, |eta|<4.7, Loose PFJet Id)
+    pfmetcorr_ex, // corrected met px
+    pfmetcorr_ey  // corrected met py
+);
+recoilMvaMetCorrector.CorrectByMeanResolution(
+    mvamet_ex, 
+    mvamet_ey, 
+    genZPx,    
+    genZPy,    
+    visZPx,    
+    visZPy,    
+    nJets30,   
+    mvametcorr_ex,
+    mvametcorr_ey 
+);
