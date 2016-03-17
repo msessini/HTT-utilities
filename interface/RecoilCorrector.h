@@ -21,6 +21,17 @@ class RecoilCorrector {
 	       int njets,
 	       float & MetCorrPx,
 	       float & MetCorrPy);
+
+  void CorrectByMeanResolution(float MetPx,
+			       float MetPy,
+			       float genZPx, 
+			       float genZPy,
+			       float diLepPx,
+			       float diLepPy,
+			       int njets,
+			       float & MetCorrPx,
+			       float & MetCorrPy);
+
   
  private:
 

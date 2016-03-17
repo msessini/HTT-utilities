@@ -18,8 +18,17 @@ RecoilCorrector::RecoilCorrector(TString fileName) {
     std::cout << "Check content of the file " << _fileName << std::endl;
   }
 
-  TString perpZStr = projH->GetXaxis()->GetBinLabel(1);
-  TString paralZStr = projH->GetXaxis()->GetBinLabel(2);
+  TString firstBinStr  = projH->GetXaxis()->GetBinLabel(1);
+  TString secondBinStr = projH->GetXaxis()->GetBinLabel(2);
+
+  TString paralZStr = firstBinStr;
+  TString perpZStr  = secondBinStr;
+  if (firstBinStr.Contains("Perp")) {
+    paralZStr = secondBinStr;
+    perpZStr  = firstBinStr;
+  }
+  std::cout << "Parallel component      (U1) : " << paralZStr << std::endl;
+  std::cout << "Perpendicular component (U2) : " << perpZStr << std::endl;
 
   TH1D * ZPtBinsH = (TH1D*)file->Get("ZPtBinsH");
   if (ZPtBinsH==NULL) {
@@ -57,8 +66,8 @@ RecoilCorrector::RecoilCorrector(TString fileName) {
 		 nJetsBins,
 		 nJetsStr);
 
-  _epsrel = 1e-2;
-  _epsabs = 1e-2;
+  _epsrel = 5e-4;
+  _epsabs = 5e-4;
   _range = 0.95;
 
 }
@@ -162,8 +171,6 @@ void RecoilCorrector::InitMEtWeights(TFile * _fileMet,
 	
       }
 
-      // Met Paral Data
-
       std::cout << _ZPtStr[ZPtBin] << " : " << _nJetsStr[jetBin] << std::endl;
       
       double xminD,xmaxD;
@@ -190,12 +197,12 @@ void RecoilCorrector::InitMEtWeights(TFile * _fileMet,
       _xminMetZPerp[ZPtBin][jetBin] = TMath::Max(_xminMetZPerpData[ZPtBin][jetBin],_xminMetZPerpMC[ZPtBin][jetBin]);
       _xmaxMetZPerp[ZPtBin][jetBin] = TMath::Min(_xmaxMetZPerpData[ZPtBin][jetBin],_xmaxMetZPerpMC[ZPtBin][jetBin]);
       
-      _meanMetZParalData[ZPtBin][jetBin] = _metZParalData[ZPtBin][jetBin]->GetParameter(1);
+      _meanMetZParalData[ZPtBin][jetBin] = _metZParalData[ZPtBin][jetBin]->Mean(_xminMetZParalData[ZPtBin][jetBin],_xmaxMetZParalData[ZPtBin][jetBin]);
       _rmsMetZParalData[ZPtBin][jetBin] = TMath::Sqrt(_metZParalData[ZPtBin][jetBin]->CentralMoment(2,_xminMetZParalData[ZPtBin][jetBin],_xmaxMetZParalData[ZPtBin][jetBin]));
       _meanMetZPerpData[ZPtBin][jetBin] = 0;
       _rmsMetZPerpData[ZPtBin][jetBin] = TMath::Sqrt(_metZPerpData[ZPtBin][jetBin]->CentralMoment(2,_xminMetZPerpData[ZPtBin][jetBin],_xmaxMetZPerpData[ZPtBin][jetBin]));
 
-      _meanMetZParalMC[ZPtBin][jetBin] = _metZParalMC[ZPtBin][jetBin]->GetParameter(1);
+      _meanMetZParalMC[ZPtBin][jetBin] = _metZParalMC[ZPtBin][jetBin]->Mean(_xminMetZParalMC[ZPtBin][jetBin],_xmaxMetZParalMC[ZPtBin][jetBin]);
       _rmsMetZParalMC[ZPtBin][jetBin] = TMath::Sqrt(_metZParalMC[ZPtBin][jetBin]->CentralMoment(2,_xminMetZParalMC[ZPtBin][jetBin],_xmaxMetZParalMC[ZPtBin][jetBin]));
       _meanMetZPerpMC[ZPtBin][jetBin] = 0;
       _rmsMetZPerpMC[ZPtBin][jetBin] = TMath::Sqrt(_metZPerpMC[ZPtBin][jetBin]->CentralMoment(2,_xminMetZPerpMC[ZPtBin][jetBin],_xmaxMetZPerpMC[ZPtBin][jetBin]));
@@ -324,6 +331,57 @@ void RecoilCorrector::Correct(float MetPx,
 
 }
 
+void RecoilCorrector::CorrectByMeanResolution(float MetPx,
+					      float MetPy,
+					      float genVPx, 
+					      float genVPy,
+					      float visVPx,
+					      float visVPy,
+					      int njets,
+					      float & MetCorrPx,
+					      float & MetCorrPy) {
+  
+  // input parameters
+  // MetPx, MetPy - missing transverse momentum 
+  // genVPx, genVPy - generated transverse momentum of Z(W)
+  // visVPx, visVPy - visible transverse momentum of Z(W)
+  // njets - number of jets 
+  // MetCorrPx, MetCorrPy - corrected missing transverse momentum
+
+  float Zpt = TMath::Sqrt(genVPx*genVPx + genVPy*genVPy);
+
+  float U1 = 0;
+  float U2 = 0;
+  float metU1 = 0;
+  float metU2 = 0;
+
+  CalculateU1U2FromMet(MetPx,
+		       MetPy,
+		       genVPx,
+		       genVPy,
+		       visVPx,
+		       visVPy,
+		       U1,
+		       U2,
+		       metU1,
+		       metU2);
+  if (Zpt>1000)
+    Zpt = 999;
+
+  if (njets>=_nJetsBins)
+    njets = _nJetsBins - 1;
+
+  int ZptBin = binNumber(Zpt, _ZPtBins);
+
+  U1U2CorrectionsByWidth(U1, 
+			 U2,
+			 ZptBin,
+			 njets);  
+  
+  CalculateMetFromU1U2(U1,U2,genVPx,genVPy,visVPx,visVPy,MetCorrPx,MetCorrPy);
+
+}
+
 float RecoilCorrector::CorrectionsBySampling(float x, TF1 * funcMC, TF1 * funcData) {
 
   int nSumProb = 1;
@@ -360,23 +418,13 @@ void RecoilCorrector::U1U2CorrectionsByWidth(float & U1,
   // ********* U1 *************
 
   float width = U1 - _meanMetZParalMC[ZptBin][njets];
-
-  if (width<0)
-    width *= _rmsMetZParalData[ZptBin][njets]/_rmsMetZParalMC[ZptBin][njets];
-  else
-    width *= _rmsMetZParalData[ZptBin][njets]/_rmsMetZParalMC[ZptBin][njets];
-
+  width *= _rmsMetZParalData[ZptBin][njets]/_rmsMetZParalMC[ZptBin][njets];
   U1 = _meanMetZParalData[ZptBin][njets] + width;
 
   // ********* U2 *************
 
   width = U2;
-
-  if (width<0)
-    width *= _rmsMetZPerpData[ZptBin][njets]/_rmsMetZPerpMC[ZptBin][njets];
-  else 
-    width *= _rmsMetZPerpData[ZptBin][njets]/_rmsMetZPerpMC[ZptBin][njets];
-
+  width *= _rmsMetZPerpData[ZptBin][njets]/_rmsMetZPerpMC[ZptBin][njets];
   U2 = width;
 
 }
@@ -387,7 +435,7 @@ float RecoilCorrector::rescale(float x,
 			       float resolutionData,
 			       float resolutionMC) {
 
-  float width = meanMC - x;
+  float width = x - meanMC;
   width *= resolutionData/resolutionMC;
   return meanData + width;
 
@@ -411,7 +459,7 @@ void RecoilCorrector::CalculateU1U2FromMet(float metPx,
   
   float phiHadRec = TMath::ATan2(hadRecY,hadRecX);
   
-  float phiDiMuon = TMath::ATan2(diLepPy,diLepPx);
+  float phiDiLep = TMath::ATan2(diLepPy,diLepPx);
   
   float phiMEt = TMath::ATan2(metPy,metPx);
   
@@ -419,14 +467,14 @@ void RecoilCorrector::CalculateU1U2FromMet(float metPx,
   
   float phiZ = TMath::ATan2(genZPy,genZPx);
   
-  float deltaPhiZHadRec = phiHadRec - phiZ;
-  float deltaPhiDiMuMEt = phiMEt - phiDiMuon;
+  float deltaPhiZHadRec  = phiHadRec - phiZ;
+  float deltaPhiDiLepMEt = phiMEt - phiDiLep;
   
   U1 = hadRecPt * TMath::Cos(deltaPhiZHadRec);
   U2 = hadRecPt * TMath::Sin(deltaPhiZHadRec);
   
-  metU1 = metPt * TMath::Cos(deltaPhiDiMuMEt);      
-  metU2 = metPt * TMath::Sin(deltaPhiDiMuMEt);
+  metU1 = metPt * TMath::Cos(deltaPhiDiLepMEt);      
+  metU2 = metPt * TMath::Sin(deltaPhiDiLepMEt);
 }
 
 void RecoilCorrector::CalculateMetFromU1U2(float U1,
