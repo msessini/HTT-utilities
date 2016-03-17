@@ -50,7 +50,7 @@ class MEtSys {
 			  float & metShiftPx,
 			  float & metShiftPy);
 
-  enum BkgdType{EWK=0, TOP=1};
+  enum BkgdType{V=0, EWK=1, TOP=2};
   enum SysType{Response=0, Resolution=1};
 
  private:
@@ -77,7 +77,7 @@ class MEtSys {
   
   int nBkgdTypes;
   int nJetBins;
-  TH1D * responseHist[2][5];
+  TH1D * responseHist[3][5];
 
 
 };

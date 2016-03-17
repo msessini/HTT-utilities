@@ -121,18 +121,16 @@ void MEtSys::ShiftResponseMet(float metPx,
   int jets = njets; 
   if (jets>2) jets = 2; 
   if (jets<0) {
-    std::cout << "Number of jets is negative ! Setting number of jets to 0" << std::endl;
-    jets = 0;
+    std::cout << "MEtSys::ShiftResponseMet() : Number of jets is negative !" << std::endl;
+    exit(-1);
   }
 
-  if (bkgdType<0) { 
-    std::cout << "Background type < 0 ! Setting background type to 0 " << std::endl;
-    bkgdType=0;
-  }
-  
-  if (bkgdType>1) { 
-    std::cout << "Background type > 2 ! Setting background type to 2 " << std::endl;
-    bkgdType=1;
+  if (bkgdType<0||bkgdType>=nBkgdTypes) { 
+    std::cout << "MEtSys::ShiftResponseMet() : Background type " << bkgdType << " does not correspond to any of allowed options : " << std::endl;
+    std::cout << "0 : Z(W)+Jets" << std::endl;
+    std::cout << "1 : EWK+single-top" << std::endl;
+    std::cout << "2 : top pair" << std::endl;   
+    exit(-1);
   }
 
   float mean = -responseHist[bkgdType][jets]->Interpolate(genVPt)*genVPt;
@@ -165,18 +163,16 @@ void MEtSys::ShiftResolutionMet(float metPx,
   int jets = njets; 
   if (jets>2) jets = 2; 
   if (jets<0) {
-    std::cout << "Number of jets is negative ! Setting number of jets to 0" << std::endl;
-    jets = 0;
+    std::cout << "MEtSys::ShiftResponseMet() : Number of jets is negative !" << std::endl;
+    exit(-1);
   }
 
-  if (bkgdType<0) { 
-    std::cout << "Background type < 0 ! Setting background type to 0 " << std::endl;
-    bkgdType=0;
-  }
-  
-  if (bkgdType>1) { 
-    std::cout << "Background type > 2 ! Setting background type to 2 " << std::endl;
-    bkgdType=1;
+  if (bkgdType<0||bkgdType>=nBkgdTypes) { 
+    std::cout << "MEtSys::ShiftResponseMet() : Background type " << bkgdType << " does not correspond to any of allowed options : " << std::endl;
+    std::cout << "0 : Z(W)+Jets" << std::endl;
+    std::cout << "1 : EWK+single-top" << std::endl;
+    std::cout << "2 : top pair" << std::endl;   
+    exit(-1);
   }
 
   float mean = -responseHist[bkgdType][jets]->Interpolate(genVPt)*genVPt;
