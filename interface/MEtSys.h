@@ -1,3 +1,6 @@
+#ifndef HTT_MEtSys_h
+#define HTT_MEtSys_h
+
 #include <TFile.h>
 #include <TH1.h>
 #include <TF1.h>
@@ -81,3 +84,6 @@ class MEtSys {
 
 
 };
+
+
+#endif

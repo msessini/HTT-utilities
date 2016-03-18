@@ -1,3 +1,6 @@
+#ifndef HTT_RecoilCorrector_h
+#define HTT_RecoilCorrector_h
+
 #include <TFile.h>
 #include <TH1.h>
 #include <TF1.h>
@@ -170,3 +173,5 @@ class RecoilCorrector {
   float _xmaxMetZParalMC[5][3];
 
 };
+
+#endif
