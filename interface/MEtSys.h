@@ -67,7 +67,7 @@ class MEtSys {
 			  float & metShiftPx,
 			  float & metShiftPy);
 
-  enum BkgdType{BOSON=0, EWK=1, TOP=2};
+  enum ProcessType{BOSON=0, EWK=1, TOP=2};
   enum SysType{Response=0, Resolution=1};
   enum SysShift{Up=0, Down=1};
 
