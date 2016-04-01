@@ -34,6 +34,26 @@ MEtSys::MEtSys(TString fileName) {
     JetBins.push_back(jetBinsH->GetXaxis()->GetBinLabel(i+1));
   }
 
+  TString uncType[2] = {"Response",
+			"Resolution"};
+
+  for (int i=0; i<nBkgdTypes; ++i) {
+    TString histName = Bkgd[i]+"_syst";
+    TH2D * hist = (TH2D*)file->Get(histName);
+    if (hist==NULL) {
+      std::cout << "Histogram " << histName << " should be contained in file " << fileName << std::endl;
+      std::cout << "Check content of the file " << fileName << std::endl;
+      exit(-1);
+    }
+    for (int xBin=0; xBin<2; ++xBin) {
+      for (int yBin=0; yBin<3; ++yBin) {
+	sysUnc[i][xBin][yBin] = hist->GetBinContent(xBin+1,yBin+1);
+	std::cout << "Systematics : " << Bkgd[i] << "  " << uncType[xBin] << " " << JetBins[yBin] << " = " << sysUnc[i][xBin][yBin] << std::endl;
+      }
+    }
+
+  }
+
   for (int i=0; i<nBkgdTypes; ++i) {
     for (int j=0; j<nJetBins; ++j) {
       TString histName = Bkgd[i]+"_"+JetBins[j];
@@ -212,7 +232,7 @@ void MEtSys::ShiftMEt(float metPx,
 		     sysShift,
 		     metShiftPx,
 		     metShiftPy);
-  else if (sysType==1)
+  else 
     ShiftResolutionMet(metPx,
 		       metPy,
 		       genVPx, 
@@ -226,4 +246,56 @@ void MEtSys::ShiftMEt(float metPx,
 		       metShiftPy);
 
 
+}
+
+void MEtSys::ApplyMEtSys(float metPx,
+			 float metPy,
+			 float genVPx,
+			 float genVPy,
+			 float visVPx,
+			 float visVPy,
+			 int njets,
+			 int bkgdType,
+			 int sysType,
+			 int sysShift,
+			 float & metShiftPx,
+			 float & metShiftPy) {
+ 
+
+
+
+  if (bkgdType<0||bkgdType>=nBkgdTypes) {
+    std::cout << "MEtSys::ShiftResponseMet() : Background type " << bkgdType << " does not correspond to any of allowed options : " << std::endl;
+    std::cout << "0 : Z(W)+Jets" << std::endl;
+    std::cout << "1 : EWK+single-top" << std::endl;
+    std::cout << "2 : top pair" << std::endl;
+    exit(-1);
+  }
+
+  int jets = njets; 
+  if (jets>2) jets = 2; 
+  if (jets<0) {
+    std::cout << "MEtSys::ApplyMEtSys() : Number of jets is negative !" << std::endl;
+    exit(-1);
+  }
+
+  int type = 0; if (sysType!=0) type = 1;
+
+  float scale = 1 + sysUnc[bkgdType][type][jets];
+  if (sysShift!=0) scale = 1 - sysUnc[bkgdType][type][jets];
+
+  ShiftMEt(metPx,
+	   metPy,
+	   genVPx,
+	   genVPy,
+	   visVPx,
+	   visVPy,
+	   njets,
+	   bkgdType,
+	   type,
+	   scale,
+	   metShiftPx,
+	   metShiftPy);
+
+			
 }

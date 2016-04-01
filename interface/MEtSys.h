@@ -3,6 +3,7 @@
 
 #include <TFile.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TF1.h>
 #include <TString.h>
 #include <TRandom.h>
@@ -14,6 +15,19 @@ class MEtSys {
  public:
   MEtSys(TString fileName);
   ~MEtSys(){};
+
+  void ApplyMEtSys(float metPx,
+		   float metPy,
+		   float genVPx,
+		   float genVPy,
+		   float visVPx,
+		   float visVPy,
+		   int njets,
+		   int bkgdType,
+		   int sysType,
+		   int shiftType,
+		   float & metShiftPx,
+		   float & metShiftPy);
 
   void ShiftMEt(float metPx,
 		float metPy,
@@ -53,8 +67,9 @@ class MEtSys {
 			  float & metShiftPx,
 			  float & metShiftPy);
 
-  enum BkgdType{V=0, EWK=1, TOP=2};
+  enum BkgdType{BOSON=0, EWK=1, TOP=2};
   enum SysType{Response=0, Resolution=1};
+  enum SysShift{Up=0, Down=1};
 
  private:
 
@@ -81,7 +96,9 @@ class MEtSys {
   int nBkgdTypes;
   int nJetBins;
   TH1D * responseHist[3][5];
-
+  float sysUnc[3][2][3]; // first  index : bkgd type 
+  // second index : type of uncertainty 0=response, 1=resolution
+  // third index  : jet multiplicity bin (0,1,2);
 
 };
 
