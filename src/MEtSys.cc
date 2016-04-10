@@ -136,6 +136,13 @@ void MEtSys::ShiftResponseMet(float metPx,
   float Hperp = 0;
   float genVPt = TMath::Sqrt(genVPx*genVPx+genVPy*genVPy);
 
+  // protection against null
+  if (genVPt<1.0) {
+    metShiftPx = metPx;
+    metShiftPy = metPy;
+    return;
+  }
+
   ComputeHadRecoilFromMet(metPx,metPy,genVPx,genVPy,visVPx,visVPy,Hparal,Hperp);
 
   int jets = njets; 
@@ -177,6 +184,13 @@ void MEtSys::ShiftResolutionMet(float metPx,
   float Hparal = 0;
   float Hperp = 0;
   float genVPt = TMath::Sqrt(genVPx*genVPx+genVPy*genVPy);
+
+  // protection against null
+  if (genVPt<1.0) {
+    metShiftPx = metPx;
+    metShiftPy = metPy;
+    return;
+  }
 
   ComputeHadRecoilFromMet(metPx,metPy,genVPx,genVPy,visVPx,visVPy,Hparal,Hperp);
 
