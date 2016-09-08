@@ -18,10 +18,8 @@ MET recoil corrections
 // load recoil resolution functions before looping over events
 // the path to files is defined relative to #CMSSW_BASE/src directory
 
-//RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPFMEt_76X.root"); // for amc@NLO 
-//RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/recoilMvaMEt_76X_newTraining.root"); // for amc@NLO
-RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/recoilPFMEt_76X_MG5.root"); // for MG5 
-RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/recoilMvaMEt_76X_newTraining_MG5.root"); // for MG5
+RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/PFMET_MG_2016BCD.root"); // Type-I PF MET (to be applied to MG5 MC) 
+RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/MvaMET_MG_2016BCD.root"); // MVA MET (to be applied to MG5 MC) 
  
 ...
 
