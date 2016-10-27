@@ -18,57 +18,37 @@ MET recoil corrections
 // load recoil resolution functions before looping over events
 // the path to files is defined relative to #CMSSW_BASE/src directory
 
-RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/PFMET_MG_2016BCD_RooT_5.2.root"); // Type-I PF MET 
-RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/MvaMET_MG_2016BCD_RooT_5.2.root"); // MVA MET
- 
+// use this RooT file when correcting Type I PF MET
+RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/TypeIPFMET_2016BCD.root"); // Type I PF MET
+
+// use this RooT file when correcting MVA MET
+RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/MvaMET_2016BCD.root"); // MVA MET
+
 ...
 
-// apply recoil corrections for each event
-
-// recoil corrections by quantile mapping --->
-recoilPFMetCorrector.Correct(
-    pfmet_ex,     // uncorrected met px
-    pfmet_ey,     // uncorrected met py
-    genZPx,       // generator Z(W) px
-    genZPy,       // generator Z(W) py
-    visZPx,       // visible (generator) Z(W) px
-    visZPy,       // visible (generator) Z(W) py
-    nJets30,      // number of jets (pT > 30 GeV, |eta|<4.7, Loose PFJet Id)
-    pfmetcorr_ex, // corrected met px
-    pfmetcorr_ey  // corrected met py
-);
-recoilMvaMetCorrector.Correct(
-    mvamet_ex, 
-    mvamet_ey, 
-    genZPx,    
-    genZPy,    
-    visZPx,    
-    visZPy,    
-    nJets30,   
-    mvametcorr_ex,
-    mvametcorr_ey 
-);
-
-// recoil corrections by rescaling -->
+// apply recoil corrections on event-by-event basis (Type I PF MET)
 recoilPFMetCorrector.CorrectByMeanResolution(
-    pfmet_ex,     // uncorrected met px
-    pfmet_ey,     // uncorrected met py
-    genZPx,       // generator Z(W) px
-    genZPy,       // generator Z(W) py
-    visZPx,       // visible (generator) Z(W) px
-    visZPy,       // visible (generator) Z(W) py
-    nJets30,      // number of jets (pT > 30 GeV, |eta|<4.7, Loose PFJet Id)
-    pfmetcorr_ex, // corrected met px
-    pfmetcorr_ey  // corrected met py
+    pfmet_ex, // uncorrected type I pf met px (float)
+    pfmet_ey, // uncorrected type I pf met py (float)
+    genPx, // generator Z/W/Higgs px (float)
+    genPy, // generator Z/W/Higgs py (float)
+    visPx, // generator visible Z/W/Higgs px (float)
+    visPy, // generator visible Z/W/Higgs py (float)
+    njets,  // number of jets (hadronic jet multiplicity) (int)
+    pfmetcorr_ex, // corrected type I pf met px (float)
+    pfmetcorr_ey  // corrected type I pf met py (float)
 );
+
+
+// apply recoil corrections on event-by-event basis (MVA MET)
 recoilMvaMetCorrector.CorrectByMeanResolution(
-    mvamet_ex, 
-    mvamet_ey, 
-    genZPx,    
-    genZPy,    
-    visZPx,    
-    visZPy,    
-    nJets30,   
-    mvametcorr_ex,
-    mvametcorr_ey 
+    mvamet_ex, // uncorrected mva met px (float)
+    mvamet_ey, // uncorrected mva met py (float)
+    genPx, // generator Z/W/Higgs px (float)
+    genPy, // generator Z/W/Higgs py (float)
+    visPx, // generator visible Z/W/Higgs px (float)
+    visPy, // generator visible Z/W/Higgs py (float)
+    njets,  // number of jets (hadronic jet multiplicity) (int)
+    mvametcorr_ex, // corrected mva met px (float)
+    mvametcorr_ey  // corrected mva met py (float)
 );
