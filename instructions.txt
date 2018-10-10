@@ -19,10 +19,8 @@ MET recoil corrections
 // the path to files is defined relative to #CMSSW_BASE/src directory
 
 // use this RooT file when correcting Type I PF MET
-RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/TypeIPFMET_2016BCD.root"); // Type I PF MET
-
-// use this RooT file when correcting MVA MET
-RecoilCorrector recoilMvaMetCorrector("HTT-utilities/RecoilCorrections/data/MvaMET_2016BCD.root"); // MVA MET
+// RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/TypeIPFMET_2016BCD.root"); // Type I PF MET 2016
+RecoilCorrector recoilPFMetCorrector("HTT-utilities/RecoilCorrections/data/Type1_PFMET_2017.root");
 
 ...
 
