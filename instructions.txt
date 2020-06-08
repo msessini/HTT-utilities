@@ -39,16 +39,3 @@ recoilPFMetCorrector.CorrectByMeanResolution(
     pfmetcorr_ey  // corrected type I pf met py (float)
 );
 
-
-// apply recoil corrections on event-by-event basis (MVA MET)
-recoilMvaMetCorrector.CorrectByMeanResolution(
-    mvamet_ex, // uncorrected mva met px (float)
-    mvamet_ey, // uncorrected mva met py (float)
-    genPx, // generator Z/W/Higgs px (float)
-    genPy, // generator Z/W/Higgs py (float)
-    visPx, // generator visible Z/W/Higgs px (float)
-    visPy, // generator visible Z/W/Higgs py (float)
-    njets,  // number of jets (hadronic jet multiplicity) (int)
-    mvametcorr_ex, // corrected mva met px (float)
-    mvametcorr_ey  // corrected mva met py (float)
-);
